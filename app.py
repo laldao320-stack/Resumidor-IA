@@ -1,40 +1,39 @@
 import streamlit as st
 import google.generativeai as genai
 
-# Configuración de la página
-st.set_page_config(page_title="IA Resumidora", page_icon="📝")
+# 1. Configuración básica
+st.set_page_config(page_title="Resumidor IA", page_icon="📝")
 st.title("📝 Mi Resumidor Mágico")
 
-# Intentar conectar con la API
+# 2. Conexión con la llave
 try:
     api_key = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=api_key)
-except:
-    st.error("Error: Configura tu GOOGLE_API_KEY en los Secrets de Streamlit.")
+except Exception as e:
+    st.error("Error con la API Key en Streamlit Cloud")
 
+# 3. Entrada de texto
 text = st.text_area("Pega tu texto aquí:", height=200)
 
+# 4. Botón y Magia
 if st.button("Resumir ahora"):
     if text:
         try:
-            # He cambiado el nombre a 'gemini-pro' que es el más estable para esta versión
-            model = genai.GenerativeModel('gemini-pro')
+            # Usamos el modelo más estándar del mundo
+            model = genai.GenerativeModel('gemini-1.5-flash')
             
-            prompt = f"Resume este texto en español de forma clara en 3 frases. No repitas el original: {text}"
+            # Instrucción súper clara
+            prompt = f"Resume este texto en español en 3 frases cortas: {text}"
             
+            # Generar contenido
             response = model.generate_content(prompt)
             
+            # Mostrar resultado
             st.subheader("Resumen:")
             st.write(response.text)
+            
         except Exception as e:
-            # Si falla el 'gemini-pro', intentamos con el otro nombre por si acaso
-            try:
-                model = genai.GenerativeModel('gemini-1.5-flash-latest')
-                response = model.generate_content(prompt)
-                st.subheader("Resumen:")
-                st.write(response.text)
-            except:
-                st.error(f"Lo siento, Google no responde. Error técnico: {e}")
+            st.error(f"Error técnico de Google: {e}")
     else:
         st.warning("Escribe algo primero.")
         

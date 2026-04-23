@@ -1,30 +1,32 @@
 import streamlit as st
 import google.generativeai as genai
-import os
 
-# Configuración de la página
+# Configuración
 st.set_page_config(page_title="IA Resumidora", page_icon="📝")
-
 st.title("📝 Mi Resumidor Mágico")
-st.write("Pega un texto largo y yo lo haré corto y claro por ti.")
 
-# Configurar la API Key desde los Secrets de Streamlit
-api_key = st.secrets["GOOGLE_API_KEY"]
-genai.configure(api_key=api_key)
+# Conectar con la llave (Secrets)
+if "GOOGLE_API_KEY" in st.secrets:
+    genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+else:
+    st.error("Falta la API Key en los Secrets de Streamlit")
 
 text = st.text_area("Pega tu texto aquí:", height=200)
 
 if st.button("Resumir ahora"):
     if text:
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        
-        # El comando experto para la IA
-        prompt = f"Actúa como un experto en síntesis. Resume el siguiente texto en español, usando exactamente 3 frases claras y directas. No repitas frases del original, crea una redacción nueva: {text}"
-        
-        response = model.generate_content(prompt)
-        
-        st.subheader("Resumen:")
-        st.write(response.text)
+        try:
+            # Usamos el nombre de modelo más compatible
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            
+            prompt = f"Resume este texto en español de forma clara en 3 frases: {text}"
+            
+            response = model.generate_content(prompt)
+            
+            st.subheader("Resumen:")
+            st.write(response.text)
+        except Exception as e:
+            st.error(f"Hubo un problema con la IA: {e}")
     else:
-        st.warning("Por favor, pega algún texto primero.")
+        st.warning("Escribe algo primero.")
         

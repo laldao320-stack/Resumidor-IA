@@ -1,25 +1,29 @@
 import streamlit as st
 import google.generativeai as genai
+import os
 
-# Título de la web
+# Esto obliga a Streamlit a olvidar la versión 'beta'
+os.environ["GOOGLE_API_VERSION"] = "v1"
+
 st.title("📝 Mi Resumidor Mágico")
 
-# Configurar la API directamente
-if "GOOGLE_API_KEY" in st.secrets:
-    # Usamos el nombre del modelo sin rutas raras
-    genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-    model = genai.GenerativeModel('gemini-1.5-flash')
-else:
-    st.error("Configura la API Key en Streamlit.")
+# Configuración simplificada al máximo
+try:
+    llave = st.secrets["GOOGLE_API_KEY"]
+    genai.configure(api_key=llave)
+    # Cambiamos el nombre del modelo al 'latest'
+    model = genai.GenerativeModel('gemini-1.5-flash-latest')
+except Exception as e:
+    st.error(f"Error de configuración: {e}")
 
 text = st.text_area("Pega tu texto aquí:")
 
 if st.button("Resumir ahora"):
     if text:
         try:
-            # Pedimos el resumen directamente
-            response = model.generate_content(f"Resume en 3 frases: {text}")
-            st.success("¡Hecho!")
-            st.write(response.text)
+            # Petición directa
+            res = model.generate_content(f"Resume en 3 frases: {text}")
+            st.success("¡Lo conseguí!")
+            st.write(res.text)
         except Exception as e:
-            st.error(f"Error: {e}")
+            st.error(f"Error técnico: {e}")
